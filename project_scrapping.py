@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 # <nbformat>3.0</nbformat>
 
-# <codecell>
-
 import sys
 from numpy import *
 import urllib
 import re
+
+#TODO:
+#  - replace regex calls by XPath
+#  - one single parsing of the project page to get all the info
+#  - replace the calls to print (on the screen) by writing on a DB
+
 
 webpage = urllib.urlopen('http://www.kickstarter.com/projects/lalorek/a-field-guide-to-silicon-hills').read()
 #print webpage
