@@ -65,9 +65,16 @@ def nb_backers_list(project_page):
 def clean(var): return var.upper().replace('_',' ')
 
 
-list_var=["project_title" ,"nb_backers" ,"project_status" ,"project_goal" ,"project_money" ,"nb_rewards" ,"parse_raw_int" ,"rewards_list" ,"nb_backers_list"]
-def print_info(project_page):
+current_vars=["project_title" ,"nb_backers" ,"project_status" ,"project_goal" ,"project_money" ,"nb_rewards" ,"parse_raw_int" ,"rewards_list" ,"nb_backers_list"]
+def print_info(project_page, list_var):
     for var in list_var:
         print "%s : \t %s" %(clean(var), globals()[var](project_page)) #globals() est un dictionnaire de toutes les fonctions créés dans la session, il associe le nom de la fonction à la fonction
 
-print_info(webpage)
+def get_data(project_page, list_var)
+    data={}                                 #on crée un dictionnaire qui associera à chaque var de list_var, sa valeur dans projectpage
+    for var in list_var:
+        data[clean(var)] = globals()[var](project_page)
+    return data
+
+    
+print_info(webpage, current_vars)
