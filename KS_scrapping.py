@@ -35,7 +35,7 @@ with open('list_projects.txt', 'r+') as list_projects_file :  #la syntaxe 'with 
         data      =  [ project.strip().split(';') for project in list_projects_file.readlines() ]
         list_urls =   [ project[1] for project  in data ]   # data[:,1] ne marche pas c'est génial
         list_id   =  [float(project[0]) for project  in data ]
-        next_id = max(list_id ) + 1
+        next_id = int(max(list_id ) + 1)
 
     for new_project_url in projects_list() :
         if new_project_url not in list_urls :
