@@ -5,6 +5,7 @@ import sys, os, re, unicodedata, json, urllib, datetime
 from numpy import *
 
 #TODO:
+#  - adapt the writing to files to write incrementally the relevant information
 #  - replace regex calls by XPath
 #  - one single parsing of the project page to get all the info
 #  - replace the calls to print (on the screen) by writing on a DB
@@ -95,7 +96,7 @@ def update_file(project_name, list_var):
     project_page = urllib.urlopen('http://www.kickstarter.com/projects/' + project_name).read()
     if not(os.path.exists(path)):
         file = open(path, 'a')
-    else: file = open(path,'w')
+    else: file = open(path,'w+')
     for var in list_var:
         file.write("%s : \t %s\n" %(clean_varnames(var), globals()[var](project_page)))
     file.close()
