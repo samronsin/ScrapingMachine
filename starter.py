@@ -30,6 +30,5 @@ def projects_scanner(l):
             print data_project
     parallel_run(update,l)
 
-
-if __name__ == '__main__' :
-	projects_scanner(list_projects)
+if __name__ == '__main__':
+	projects_scanner(list_projects) 
