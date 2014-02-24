@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 # <nbformat>3.0</nbformat>
 
-import sys
+import sys, os, re, unicodedata, json, urllib, datetime
 from numpy import *
-import re
-import unicodedata
-import json
-import urllib
-import datetime
+
 #TODO:
 #  - replace regex calls by XPath
 #  - one single parsing of the project page to get all the info
@@ -84,6 +80,7 @@ def nb_backers_list(project_page):
 #########################################################
 
 def scrapping_day(project_page): return str(datetime.datetime.now().date())
+
 def scrapping_time(project_page): return str(datetime.datetime.now())
 
 
@@ -91,14 +88,25 @@ def print_info(project_page, list_var):
     for var in list_var:
         print "%s : \t %s" %(clean_varnames(var), globals()[var](project_page)) #globals() est un dictionnaire de toutes les fonctions créés dans la session, il associe le nom de la fonction à la fonction
 
+def update_file(project_name, list_var):
+    if not(os.path.exists('KSprojects')):
+        os.mkdir('KSprojects')
+    path ='KSprojects/' + project_name.replace('/','@')
+    project_page = urllib.urlopen('http://www.kickstarter.com/projects/' + project_name).read()
+    if not(os.path.exists(path)):
+        file = open(path, 'a')
+    else: file = open(path,'w')
+    for var in list_var:
+        file.write("%s : \t %s\n" %(clean_varnames(var), globals()[var](project_page)))
+    file.close()
+
 def get_data(project_page, list_var):
-    data={}                                 #on crée un dictionnaire qui associera à chaque var de list_var, sa valeur dans projectpage
+    data={}  #on crée un dictionnaire qui associera à chaque var de list_var, sa valeur dans projectpage
     for var in list_var:
         try :
             data[clean_varnames(var)] = globals()[var](project_page)
         except :
             data[clean_varnames(var)] = 'error' #ici changer pour obtenir le type de l'erreur
-
     return data
 
 
@@ -106,4 +114,5 @@ def get_data(project_page, list_var):
 current_vars=["scrapping_day", "scrapping_time", "project_title" ,"nb_backers" ,"project_goal" ,"project_money" ,"nb_rewards", "rewards_list" ,"nb_backers_list", "creator_name"]
 
     
+#update_file('lalorek/a-field-guide-to-silicon-hills', current_vars)
 #print_info(webpage, current_vars)
