@@ -134,16 +134,17 @@ for date in dates:
 ### Observations: fitting to non-yet-successful campaigns does not provide significant improvements for accuracy
 
 
-pylab.plot(dates,accuracies)
-pylab.plot(dates,accuracies_l)
-pylab.plot(dates,accuracies_l_)
+pylab.plot(dates,accuracies, label = 'benchmark')
+pylab.plot(dates,accuracies_l, label = 'simple logistic')
+pylab.plot(dates,accuracies_l_, label = 'logistic with zooms')
 #pylab.plot(dates,accuracies_l__)
-pylab.title('Accuracy of simple logistic predictor')
+pylab.title('Accuracy of logistic predictors')
 pylab.xlabel('time')
-pylab.ylabel('accuracy of logistic predictor')
+pylab.ylabel('accuracy')
 pylab.grid(True)
 pylab.xticks(np.arange(0,1000,100))
 pylab.yticks(np.arange(0.5,1.05,0.05))
+pylab.legend(loc='lower center',fancybox=True)
 pylab.savefig('logistic-1.png')
 pylab.show()
 
