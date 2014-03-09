@@ -17,7 +17,6 @@ def load_data(dir_name):
 #    tweets = np.load('%s/tweets.npy' % (args.data_dir, ))
 #    print 'Loading graph...'
 #    graph = np.load('%s/graph.pkl' % (args.data_dir, ))
-    # conver to numpy arrays if needed
     statuses = np.array(statuses)
     return projects, statuses#, tweets, graph
 
@@ -73,7 +72,6 @@ pylab.ylabel('accuracy of naive predictor')
 pylab.grid(True)
 pylab.savefig('benchmark.png')
 pylab.show()
-
 
 
 
@@ -133,10 +131,31 @@ for date in dates:
     accuracies_l__.append(1.0-p + p*accuracy(double_logit_predict(XX,YY),YY))#Adjusting accuracy
 ### Observations: fitting to non-yet-successful campaigns does not provide significant improvements for accuracy
 
+### Testing for fitting logistic with additionnal lag variable
+def lag_logit_predict(XX,Y):
+    lr = linear_model.LogisticRegression()
+    lr.fit(XX,Y)
+    return lr.predict(XX)
+
+
+accuracies_l_ = []
+for date in dates:
+    X = statuses[:,date,1]
+    #lag_date = date-100 if date >= 100 else 0
+    X_1 = statuses[:,int(date*0.9),1]
+    X_2 = statuses[:,int(date*0.8),1]
+    X_3 = statuses[:,int(date*0.7),1]
+    X_4 = statuses[:,int(date*0.6),1]
+    X_5 = statuses[:,date/2,1]   
+    XX = np.vstack((X,X_1,X_2,X_3,X_4,X_5)).T
+    accuracies_l_.append(accuracy(lag_logit_predict(XX,Y),Y))
+### Observations: 
+
 
 pylab.plot(dates,accuracies, label = 'benchmark')
 pylab.plot(dates,accuracies_l, label = 'simple logistic')
-pylab.plot(dates,accuracies_l_, label = 'logistic with zooms')
+#pylab.plot(dates,accuracies_l_, label = 'logistic with zooms')
+pylab.plot(dates,accuracies_l_, label = 'logistic with lag')
 #pylab.plot(dates,accuracies_l__)
 pylab.title('Accuracy of logistic predictors')
 pylab.xlabel('time')
@@ -145,13 +164,54 @@ pylab.grid(True)
 pylab.xticks(np.arange(0,1000,100))
 pylab.yticks(np.arange(0.5,1.05,0.05))
 pylab.legend(loc='lower center',fancybox=True)
-pylab.savefig('logistic-1.png')
+pylab.savefig('logistic-2.png')
 pylab.show()
 
 
+const = []
 alpha = []
 alpha_1 = []
 alpha_2 = []
+probas_simple = []
+predict_simple = []
+dates = [10*i - 1 for i in range(1,101)]
+for date in dates:
+    X = statuses[:,date,1]
+    #X_1 = np.empty_like(X)
+    #X_2 = np.empty_like(X)
+    #for i in range(len(X)): 
+    #    X_1[i] = (X[i] + 0.01)**(-1)
+    #    X_2[i] = 100 if 1.0 - X[i] < 0.01 else (1.0 - X[i])**(-1)
+    #XX = np.vstack((X,X_1,X_2)).T
+    XX = X[:,np.newaxis]
+    Y = projects[:,2]
+    lr = linear_model.LogisticRegression()
+    lr.fit(XX,Y)
+    probas_simple.append(lr.predict_proba(XX))
+    predict_simple.append(lr.predict(XX))
+    const.append(lr.intercept_[0])
+    alpha.append(lr.coef_[0][0])
+    #alpha_1.append(lr.coef_[0][1])
+    #alpha_2.append(lr.coef_[0][2])
+
+
+pylab.plot(dates,const, label = "constant")
+pylab.plot(dates,alpha, label = "linear")
+pylab.plot(dates,alpha_1, label = "hyperbolic 0.01")
+pylab.plot(dates,alpha_2, label = "hyperbolic 1 (cap 100)")
+pylab.legend()
+pylab.show()
+### Observations:   - pretty stable
+#                   - magnitude 
+
+###Assessing the stability of predictors
+
+const = []
+alpha = []
+alpha_1 = []
+alpha_2 = []
+probas_simple = []
+predict_simple = []
 dates = [10*i - 1 for i in range(1,101)]
 for date in dates:
     X = statuses[:,date,1]
@@ -161,17 +221,65 @@ for date in dates:
         X_1[i] = (X[i] + 0.01)**(-1)
         X_2[i] = 100 if 1.0 - X[i] < 0.01 else (1.0 - X[i])**(-1)
     XX = np.vstack((X,X_1,X_2)).T
+    #XX = X[:,np.newaxis]
     Y = projects[:,2]
-    lr = linear_model.LogisticRegression(C=10)
+    lr = linear_model.LogisticRegression()
     lr.fit(XX,Y)
-    alpha.append(lr.coef_[0][0])
-    alpha_1.append(lr.coef_[0][1])
-    alpha_2.append(lr.coef_[0][2])
+    probas_simple.append(lr.predict_proba(XX))
+    #const.append(lr.intercept_[0])
+    #alpha.append(lr.coef_[0][0])
+    #alpha_1.append(lr.coef_[0][1])
+    #alpha_2.append(lr.coef_[0][2])
 
 
-pylab.plot(dates,alpha_1)
+TV1 = np.empty_like(statuses[:,0,1])
+for i in range(len(probas)-1):
+    Xt = probas_simple[i][:,0]
+    Xtplus1 = probas_simple[i+1][:,0]
+    TV1 += np.abs(Xtplus1 - Xt)
+
+
+i_max = np.argmax(TV1)
+p_TVmax = []
+res_TVmax = []
+for i in range(len(probas_simple)):
+    p_TVmax.append(probas_simple[i][i_max,1])
+#    pred_TVmax.append(predict_simple[i][i_max])
+    res_TVmax.append(statuses[:,dates[i],1][i_max])
+
+
+pylab.plot(dates,p_TVmax)
+pylab.plot(dates,res_TVmax)
+pylab.grid(True)
+pylab.xticks(np.arange(0,1000,100))
 pylab.show()
-### Observations:   - pretty stable
-#                   - magnitude 
 
+i_min = np.argmin(TV1)
+p_TVmin = []
+pred_TVmin = []
+res_TVmin = []
+for i in range(len(probas_simple)):
+    p_TVmin.append(probas_simple[i][i_min,1])
+#    pred_TVmax.append(predict_simple[i][i_max])
+    res_TVmin.append(statuses[:,dates[i],1][i_min])
+
+pylab.plot(dates,p_TVmin)
+#pylab.plot(dates,pred_TVmax)
+pylab.plot(dates,res_TVmin)
+pylab.grid(True)
+pylab.xticks(np.arange(0,1000,100))
+pylab.show()
+
+
+###Looking for money lost
+money_lost = np.zeros_like(statuses[:,0,1])
+dates_loss = np.zeros_like(statuses[:,0,1])
+for i in range(len(probas)-1):
+    Xt = statuses[:,dates[i],1]
+    Xtplus1 = statuses[:,dates[i+1],1]
+    for j in range(len(money_lost)):
+        money_lost[j] = money_lost[j] or (Xtplus1[j] < Xt[j])
+        if dates_loss[j] == 0. and  Xtplus1[j] < Xt[j]: dates_loss[j] = dates[i]
+
+    
 
