@@ -1,6 +1,6 @@
 import cPickle, datetime
 import numpy as np
-import scikitlearn, pylab, math
+import sklearn, pylab, math
 from sklearn import linear_model
 
 def load_binary(file_name):
@@ -70,6 +70,27 @@ def accuracy(predictions,Y):
         right += predictions[i]==float(Y[i])
     return float(right)/n
 
+
+def precision(predictions,Y):
+    n = len(predictions)
+    n_true_pos = 0
+    n_pos = 0
+    for i in range(n):
+        n_right += predictions[i]==float(Y[i]) and Y[i] == 1
+        n_true_pos += predictions[i]== 1.0
+    return float(n_true_pos)/n_pos
+
+
+def recall(predictions,Y):
+    n = len(predictions)
+    n_true_pos = 0
+    n_pos = 0
+    for i in range(n):
+        n_right += predictions[i]==float(Y[i]) and predictions[i] == 1
+        n_true_pos += predictions[i]== 1.0
+    return float(n_true_pos)/n_pos
+
+
 ### Benchmark with naive predictor
 
 projects, statuses = load_data('sidekick')
@@ -94,7 +115,7 @@ pylab.show()
 
 
 ### Simple logistic predictor
-
+Y = projects[:,2]
 dates = [10*i - 1 for i in range(1,101)]
 
 def simple_logit_predict(X,Y):
@@ -108,6 +129,7 @@ accuracies_l = []
 for date in dates:
     X1 = statuses[:,date,1]
     accuracies_l.append(accuracy(simple_logit_predict(X1,Y),Y))
+
 
 
 ### Variations around the simple predictor
@@ -271,6 +293,7 @@ pylab.show()
 
 ###Assessing the stability of predictors
 
+Y = projects[:,2]
 const = []
 alpha = []
 alpha_1 = []
@@ -287,7 +310,6 @@ for date in dates:
         X_2[i] = 100 if 1.0 - X[i] < 0.01 else (1.0 - X[i])**(-1)
     XX = np.vstack((X,X_1,X_2)).T
     #XX = X[:,np.newaxis]
-    Y = projects[:,2]
     lr = linear_model.LogisticRegression()
     lr.fit(XX,Y)
     probas_simple.append(lr.predict_proba(XX))
@@ -346,6 +368,22 @@ for i in range(len(probas)-1):
         if dates_loss[j] == 0. and  Xtplus1[j] < Xt[j]: dates_loss[j] = dates[i]
 
 
-###Taking tweets into account
+### Plotting the decision boundaries
+
+dates = [5*i-1 for i in range(1,201)]
+boundaries_l = []
+for date in dates:
+    X = statuses[:,date,1]
+    XX = X[:,np.newaxis]
+    lr = linear_model.LogisticRegression()
+    lr.fit(XX,Y)
+    boundaries_l.append(-lr.intercept_[0]/lr.coef_[0][0])
 
 
+
+pylab.plot(dates,boundaries_l)
+pylab.title('Decision boundary of logistic predictor')
+pylab.xlabel('normalized time')
+pylab.ylabel('share of goal effectively pledged')
+pylab.savefig('decision_boundary.png')
+pylab.show()
