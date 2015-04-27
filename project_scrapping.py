@@ -3,17 +3,17 @@
 
 import sys, os, re, unicodedata, json, urllib, datetime
 from numpy import *
-import BeautifulSoup
+#import BeautifulSoup
 
-#TODO:
-#  - adapt the writing to files to write incrementally the relevant information
-#  - replace regex calls by XPath
-#  - one single parsing of the project page to get all the info
-#  - replace the calls to print (on the screen) by writing on a DB
-#  - refléchir à l'optimisation de l'ouverture de page (L17), qui prend plus d'une seconde
-#  - ajouter d'autres  
-#  - récupérer le type de l'erreur au lieu de relever simplement 'erreur' L100
-
+"""TODO:
+  - adapt the writing to files to write incrementally the relevant information
+  - replace regex calls by XPath
+  - one single parsing of the project page to get all the info
+  - replace the calls to print (on the screen) by writing on a DB
+  - refléchir à l'optimisation de l'ouverture de page (L17), qui prend plus d'une seconde
+  - ajouter d'autres  
+  - récupérer le type de l'erreur au lieu de relever simplement 'erreur' L100
+"""
 
 #webpage = urllib.urlopen('http://www.kickstarter.com/projects/lalorek/a-field-guide-to-silicon-hills').read()
 
@@ -186,9 +186,3 @@ def get_data(project_page, list_var):
     return data
 
 
-
-#current_vars=["scrapping_day", "scrapping_time", "project_title" ,"nb_backers" ,"project_goal" ,"project_money" ,"nb_rewards", "rewards_list" ,"nb_backers_list", "creator_name"]
-
-    
-#update_file('lalorek/a-field-guide-to-silicon-hills', current_vars)
-#print_info(webpage, current_vars)
